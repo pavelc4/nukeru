@@ -1,1 +1,47 @@
+#idea
+.zed
+.vscode/
+.idea/
+
+# Android
+.gradle/
+build/
+local.properties
+*.iml
+*.ids
+*.hprof
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+.cargo
+features.html
+
+# Scripts
+run_android.sh
+
+#build artifacts
+*.apk
+*.so
+*.dm
+*.json
 /target
+
+
+# Android specific
+android/build/
+android/app/build/
+android/.gradle/
+android/app/src/main/jniLibs/
+android/gradle/gradle-daemon-jvm.properties
+
+
+# Keystores and secrets
+*.keystore
+*.jks
+keystore-b64.txt
+android/android/app/src/main/jniLibs/arm64-v8a/librpkg.so
+android/app/release/app-release.apk
+android/app/release/output-metadata.json
+android/app/release/baselineProfiles/0/app-release.dm
+android/app/release/baselineProfiles/1/app-release.dm
