@@ -11,14 +11,15 @@ pub struct OtaZipInfo {
 }
 
 pub fn inspect_ota_zip(zip_path: &str) -> Result<OtaZipInfo> {
-    let file = File::open(zip_path).with_context(|| format!("Tidak bisa buka: {}", zip_path))?;
+    let file = File::open(zip_path).with_context(|| format!("Failed to open: {}", zip_path))?;
 
-    let mut archive = ZipArchive::new(BufReader::new(file)).context("Bukan ZIP valid")?;
+    let mut archive =
+        ZipArchive::new(BufReader::new(file)).context("Failed to open ZIP archive")?;
 
     let properties = {
         let mut entry = archive
             .by_name("payload_properties.txt")
-            .context("payload_properties.txt tidak ditemukan")?;
+            .context("payload_properties.txt not found")?;
 
         let mut s = String::new();
         entry.read_to_string(&mut s)?;
@@ -32,12 +33,17 @@ pub fn inspect_ota_zip(zip_path: &str) -> Result<OtaZipInfo> {
 
         if entry.compression() != zip::CompressionMethod::Stored {
             bail!(
-                "payload.bin bukan STORED (got {:?}). Bukan A/B OTA package.",
+                "payload.bin Not STORED (got {:?}). Not an A/B OTA package.",
                 entry.compression()
             );
         }
 
-        (entry.data_start(), entry.size())
+        (
+            entry
+                .data_start()
+                .context("failed to fetch payload.bin offset")?,
+            entry.size(),
+        )
     };
 
     Ok(OtaZipInfo {
