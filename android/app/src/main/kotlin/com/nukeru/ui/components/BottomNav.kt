@@ -84,39 +84,42 @@ fun FloatingBottomNav(
             .padding(bottom = 24.dp),
         contentAlignment = Alignment.Center
     ) {
-        Row(
-            modifier = Modifier
-                .height(64.dp)
-                .background(
-                    color = Color(0xFF1D1B20), // Dark background for floating nav from html
-                    shape = RoundedCornerShape(50)
-                )
-                .padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        Surface(
+            shape = RoundedCornerShape(50),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            shadowElevation = 8.dp,
+            tonalElevation = 8.dp
         ) {
-            items.forEach { item ->
-                val isSelected = currentTab == item.route
-                val interactionSource = remember { MutableInteractionSource() }
+            Row(
+                modifier = Modifier
+                    .height(64.dp)
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items.forEach { item ->
+                    val isSelected = currentTab == item.route
+                    val interactionSource = remember { MutableInteractionSource() }
 
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(if (isSelected) Color(0xFF4A4458) else Color.Transparent)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null, // Custom ripple can go here
-                            onClick = { onTabSelected(item.route) }
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.label,
-                        tint = if (isSelected) Color(0xFFE8DEF8) else Color(0xFFCAC4D0),
-                        modifier = Modifier.size(24.dp)
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null,
+                                onClick = { onTabSelected(item.route) }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = item.label,
+                            tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
             }
         }

@@ -25,9 +25,11 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun SettingsScreen(
     isFloatingNav: Boolean,
-    onNavStyleChanged: (Boolean) -> Unit
+    onNavStyleChanged: (Boolean) -> Unit,
+    isDynamicColor: Boolean,
+    onDynamicColorChanged: (Boolean) -> Unit
 ) {
-    var isThemePreset by remember { mutableStateOf(true) }
+
     var selectedColorIndex by remember { mutableIntStateOf(0) }
     var selectedModeIndex by remember { mutableIntStateOf(1) } // 0=Muted, 1=Expressive, 2=Vibrant
     var isEnglish by remember { mutableStateOf(false) }
@@ -69,18 +71,18 @@ fun SettingsScreen(
             ThemeToggleCard(
                 title = "Material You (Auto)",
                 subtitle = "Follow system wallpaper (A12+)",
-                isSelected = !isThemePreset,
-                onClick = { isThemePreset = false }
+                isSelected = isDynamicColor,
+                onClick = { onDynamicColorChanged(true) }
             )
             ThemeToggleCard(
                 title = "Manual Preset",
                 subtitle = "Choose color and style",
-                isSelected = isThemePreset,
-                onClick = { isThemePreset = true }
+                isSelected = !isDynamicColor,
+                onClick = { onDynamicColorChanged(false) }
             )
         }
 
-        AnimatedVisibility(visible = isThemePreset) {
+        AnimatedVisibility(visible = !isDynamicColor) {
             Card(
                 shape = RoundedCornerShape(32.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),

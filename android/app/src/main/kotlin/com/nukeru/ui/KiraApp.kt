@@ -23,7 +23,10 @@ import com.nukeru.ui.screens.SettingsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun KiraApp() {
+fun KiraApp(
+    isDynamicColor: Boolean = true,
+    onDynamicColorChange: (Boolean) -> Unit = {}
+) {
     var homeState by remember { mutableIntStateOf(1) } // 1: Empty, 2: Selection, 3: Progress
     var currentTab by remember { mutableIntStateOf(1) } // 1: Home, 2: Log, 3: About
     var isFloatingNav by remember { mutableStateOf(true) } // Toggle for Nav mode
@@ -112,7 +115,9 @@ fun KiraApp() {
             if (isSettingsOpen) {
                 SettingsScreen(
                     isFloatingNav = isFloatingNav,
-                    onNavStyleChanged = { isFloatingNav = it }
+                    onNavStyleChanged = { isFloatingNav = it },
+                    isDynamicColor = isDynamicColor,
+                    onDynamicColorChanged = { onDynamicColorChange(it) }
                 )
             } else {
                 when (currentTab) {
