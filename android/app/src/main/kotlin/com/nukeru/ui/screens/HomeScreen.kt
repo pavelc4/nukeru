@@ -68,17 +68,17 @@ fun EmptyState() {
         }
         Spacer(modifier = Modifier.height(32.dp))
         Text(
-            text = "Payload Dumper",
-            style = MaterialTheme.typography.titleLarge,
+            text = "Select Partitions to Extract",
+            style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = "Pilih file .zip OTA untuk mengekstrak partisi. Diproses secara streaming via Rust.",
+            text = "Select an OTA .zip file to extract partitions. Processed via streaming using Rust.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 24.dp)
+            modifier = Modifier.padding(horizontal = 32.dp)
         )
     }
 }
@@ -100,7 +100,7 @@ fun SelectionState() {
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Text(
-                    text = "FILE TERPILIH",
+                    text = "SELECTED FILE",
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
@@ -114,7 +114,7 @@ fun SelectionState() {
                     maxLines = 1
                 )
                 Text(
-                    text = "42 Partisi ditemukan • JNI OK",
+                    text = "Check the partitions you want to dump to your internal storage.",
                     style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                     modifier = Modifier.padding(top = 4.dp)
                 )
@@ -208,7 +208,7 @@ fun ProgressState(onComplete: () -> Unit) {
                     strokeWidth = 2.dp
                 )
                 Text(
-                    text = "Mengekstrak via Rayon...",
+                    text = "Checking payload.bin...",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
             }
