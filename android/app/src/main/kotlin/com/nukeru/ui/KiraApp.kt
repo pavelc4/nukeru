@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nukeru.ui.components.KiraBottomNav
 import com.nukeru.ui.components.NavItem
+import com.nukeru.ui.screens.AboutScreen
 import com.nukeru.ui.screens.HomeScreen
 import com.nukeru.ui.screens.SettingsScreen
 
@@ -127,9 +128,7 @@ fun KiraApp() {
                     }
                 }
                 3 -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("About Screen Placeholder")
-                    }
+                    AboutScreen()
                 }
             } 
         } 
