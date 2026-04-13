@@ -86,9 +86,9 @@ fun FloatingBottomNav(
     ) {
         Surface(
             shape = RoundedCornerShape(50),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            shadowElevation = 8.dp,
-            tonalElevation = 8.dp
+            color = MaterialTheme.colorScheme.surface,
+            shadowElevation = 16.dp,
+            tonalElevation = 2.dp // Subtle primary tint but mostly original surface
         ) {
             Row(
                 modifier = Modifier
@@ -105,7 +105,7 @@ fun FloatingBottomNav(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(CircleShape)
-                            .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                            .background(if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
                             .clickable(
                                 interactionSource = interactionSource,
                                 indication = null,
@@ -116,7 +116,7 @@ fun FloatingBottomNav(
                         Icon(
                             imageVector = item.icon,
                             contentDescription = item.label,
-                            tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            tint = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                             modifier = Modifier.size(24.dp)
                         )
                     }
