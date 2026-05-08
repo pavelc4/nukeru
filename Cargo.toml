@@ -3,12 +3,17 @@ name = "nukeru"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "nukeru"
+crate-type = ["cdylib", "rlib"]
+
 [dependencies]
 anyhow = "1.0.102"
 byteorder = "1.5.0"
 bzip2 = "0.6.1"
 hex = "0.4.3"
 jni = "0.22.4"
+ndk = "0.9.0"
 protobuf = "3.7.2"
 rayon = "1.11.0"
 sha2 = "0.11.0"

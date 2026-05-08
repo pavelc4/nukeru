@@ -4,3 +4,6 @@ pub mod extractor;
 pub mod parser;
 pub mod verify;
 pub mod zip_utils;
+
+#[cfg(target_os = "android")]
+pub mod jni;
