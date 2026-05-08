@@ -1,12 +1,15 @@
-use jni::JNIEnv;
-use jni::objects::{JClass, JString};
-use jni::sys::jstring;
+use jni::EnvUnowned;
+use jni::objects::JClass;
+use jni::objects::JString;
 
-#[no_mangle]
-pub extern "C" fn Java_com_nukeru_backend_NukeruJni_getHelloWorld<'local>(
-    mut env: JNIEnv<'local>,
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_com_nukeru_backend_NukeruJni_getHelloWorld<'local>(
+    mut unowned_env: EnvUnowned<'local>,
     _class: JClass<'local>,
-) -> jstring {
-    let output = env.new_string("Hello from Rust!").expect("Couldn't create java string!");
-    output.into_raw()
+) -> JString<'local> {
+    unowned_env
+        .with_env(|env| -> jni::errors::Result<JString> {
+            JString::from_str(env, "Hello from Rust!")
+        })
+        .resolve::<jni::errors::ThrowRuntimeExAndDefault>()
 }
