@@ -118,6 +118,7 @@ fun HomeScreen(
                     )
                     3 -> ProgressState(
                         zipFdPath = zipFdPath,
+                        zipName = zipName,
                         partitions = partitionsList.filter { it.checked },
                         onComplete = {
                             pfd?.close()
@@ -298,6 +299,7 @@ fun PartitionSelectionItem(name: String, size: String, checked: Boolean, onToggl
 @Composable
 fun ProgressState(
     zipFdPath: String,
+    zipName: String,
     partitions: List<PartitionInfo>,
     onComplete: () -> Unit
 ) {
@@ -311,10 +313,17 @@ fun ProgressState(
         withContext(Dispatchers.IO) {
             val baseDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS)
             val nukeruDir = java.io.File(baseDir, "Nukeru")
-            if (!nukeruDir.exists()) {
-                nukeruDir.mkdirs()
+            
+            val timeFormat = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault())
+            val timestamp = timeFormat.format(java.util.Date())
+            val romBaseName = zipName.substringBeforeLast(".zip")
+            val sessionDirName = "${romBaseName}_$timestamp"
+            
+            val sessionDir = java.io.File(nukeruDir, sessionDirName)
+            if (!sessionDir.exists()) {
+                sessionDir.mkdirs()
             }
-            val outDir = nukeruDir.absolutePath
+            val outDir = sessionDir.absolutePath
             savedDirStr = outDir
 
             val selectedNames = partitions.joinToString(",") { it.name }

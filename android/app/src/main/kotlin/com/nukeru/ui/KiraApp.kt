@@ -3,7 +3,7 @@ package com.nukeru.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.nukeru.ui.components.KiraBottomNav
 import com.nukeru.ui.components.NavItem
 import com.nukeru.ui.screens.AboutScreen
+import com.nukeru.ui.screens.HistoryScreen
 import com.nukeru.ui.screens.HomeScreen
 import com.nukeru.ui.screens.SettingsScreen
 
@@ -57,7 +58,7 @@ fun KiraApp(
                     if (isSettingsOpen) {
                         IconButton(onClick = { isSettingsOpen = false }) {
                             Icon(
-                                imageVector = androidx.compose.material.icons.Icons.Filled.ArrowBack,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back",
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
@@ -112,9 +113,7 @@ fun KiraApp(
                     )
                 }
                 2 -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Log Screen Placeholder")
-                    }
+                    HistoryScreen()
                 }
                 3 -> {
                     AboutScreen()
