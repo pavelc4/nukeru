@@ -24,6 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.Crossfade
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
@@ -32,22 +34,18 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-data class ExtractedFile(val name: String, val sizeMB: Long)
 
-data class HistoryItem(
-    val dir: File,
-    val name: String,
-    val dateStr: String,
-    val fileCount: Int,
-    val totalSizeMB: Long,
-    val files: List<ExtractedFile>
-)
 
 @Composable
 fun HistoryScreen() {
     var historyList by remember { mutableStateOf<List<HistoryItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var itemToDelete by remember { mutableStateOf<HistoryItem?>(null) }
+    var selectedItem by remember { mutableStateOf<HistoryItem?>(null) }
+
+    BackHandler(enabled = selectedItem != null) {
+        selectedItem = null
+    }
 
     val loadHistory = suspend {
         withContext(Dispatchers.IO) {
@@ -125,163 +123,64 @@ fun HistoryScreen() {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 16.dp)
-    ) {
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else if (historyList.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Outlined.FolderZip,
-                        contentDescription = null,
-                        modifier = Modifier.size(72.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "No Extraction History",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Files saved to Downloads/Nukeru will appear here.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        textAlign = TextAlign.Center
-                    )
-                }
+    Crossfade(targetState = selectedItem, label = "HistoryCrossfade") { currentItem ->
+        if (currentItem != null) {
+            Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                HistoryDetailScreen(
+                    item = currentItem,
+                    onBack = { selectedItem = null }
+                )
             }
         } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(historyList) { item ->
-                    HistoryCard(item, onDelete = { itemToDelete = item })
-                }
-                item {
-                    Spacer(modifier = Modifier.height(80.dp)) // Padding for bottom nav
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun HistoryCard(item: HistoryItem, onDelete: () -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            contentColor = MaterialTheme.colorScheme.onSurface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
+            Column(
                 modifier = Modifier
-                    .clickable { expanded = !expanded }
-                    .padding(20.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = item.name,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        maxLines = 2
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "${item.fileCount} partitions • ${item.totalSizeMB} MB",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = item.dateStr,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-                    )
-                }
-                IconButton(
-                    onClick = { expanded = !expanded }
-                ) {
-                    Icon(
-                        imageVector = if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
-                        contentDescription = "Expand",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                IconButton(
-                    onClick = onDelete,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Icon(Icons.Outlined.Delete, contentDescription = "Delete")
-                }
-            }
-
-            AnimatedVisibility(
-                visible = expanded,
-                enter = expandVertically(animationSpec = tween(300)),
-                exit = shrinkVertically(animationSpec = tween(300))
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 8.dp)
-                ) {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    Text(
-                        text = "Extracted Files:",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    
-                    item.files.forEach { file ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                if (isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else if (historyList.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.InsertDriveFile,
+                                imageVector = Icons.Outlined.FolderZip,
                                 contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                modifier = Modifier.size(72.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = file.name,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text(
-                                text = "${file.sizeMB} MB",
-                                style = MaterialTheme.typography.bodySmall,
+                                text = "No Extraction History",
+                                style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Files saved to Downloads/Nukeru will appear here.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                textAlign = TextAlign.Center
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+                } else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(historyList) { item ->
+                            HistoryCard(
+                                item = item,
+                                onClick = { selectedItem = item },
+                                onDelete = { itemToDelete = item }
+                            )
+                        }
+                        item {
+                            Spacer(modifier = Modifier.height(80.dp)) // Padding for bottom nav
+                        }
+                    }
                 }
             }
         }

@@ -27,12 +27,12 @@ fun SettingsScreen(
     isFloatingNav: Boolean,
     onNavStyleChanged: (Boolean) -> Unit,
     isDynamicColor: Boolean,
-    onDynamicColorChanged: (Boolean) -> Unit
+    onDynamicColorChanged: (Boolean) -> Unit,
+    selectedColorIndex: Int,
+    onColorIndexChanged: (Int) -> Unit
 ) {
 
-    var selectedColorIndex by remember { mutableIntStateOf(0) }
     var selectedModeIndex by remember { mutableIntStateOf(1) } // 0=Muted, 1=Expressive, 2=Vibrant
-    var isEnglish by remember { mutableStateOf(false) }
     var isDebugMode by remember { mutableStateOf(false) }
     var logLevelIndex by remember { mutableIntStateOf(1) } // 1=Debug
 
@@ -63,7 +63,7 @@ fun SettingsScreen(
             )
         }
 
-        Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
         // --- Theme System ---
         SectionTitle("Theme System")
@@ -106,13 +106,13 @@ fun SettingsScreen(
                             ColorPreset(
                                 name = "Pistachio", c1 = Color(0xFFC5E384), c2 = Color(0xFF200F07),
                                 isSelected = selectedColorIndex == 0,
-                                onClick = { selectedColorIndex = 0 },
+                                onClick = { onColorIndexChanged(0) },
                                 modifier = Modifier.weight(1f)
                             )
                             ColorPreset(
                                 name = "Matcha", c1 = Color(0xFFC2D8C4), c2 = Color(0xFF222222),
                                 isSelected = selectedColorIndex == 1,
-                                onClick = { selectedColorIndex = 1 },
+                                onClick = { onColorIndexChanged(1) },
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -123,13 +123,13 @@ fun SettingsScreen(
                             ColorPreset(
                                 name = "Tyrian", c1 = Color(0xFF700143), c2 = Color(0xFFF8EDAD),
                                 isSelected = selectedColorIndex == 2,
-                                onClick = { selectedColorIndex = 2 },
+                                onClick = { onColorIndexChanged(2) },
                                 modifier = Modifier.weight(1f)
                             )
                             ColorPreset(
                                 name = "Moss", c1 = Color(0xFF385144), c2 = Color(0xFFF8F5F2),
                                 isSelected = selectedColorIndex == 3,
-                                onClick = { selectedColorIndex = 3 },
+                                onClick = { onColorIndexChanged(3) },
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -151,20 +151,6 @@ fun SettingsScreen(
             }
         }
 
-        Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-        // --- Language ---
-        SectionTitle("Language (Bahasa)")
-        SegmentedControl(
-            items = listOf("Indonesia", "English"),
-            selectedIndex = if (isEnglish) 1 else 0,
-            onItemSelected = { isEnglish = it == 1 },
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-            activeColor = MaterialTheme.colorScheme.surface,
-            inactiveColor = Color.Transparent
-        )
-
-        Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
         // --- Developer Options ---
         SectionTitle("Developer Options")

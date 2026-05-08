@@ -26,7 +26,9 @@ import com.nukeru.ui.screens.SettingsScreen
 @Composable
 fun KiraApp(
     isDynamicColor: Boolean = true,
-    onDynamicColorChange: (Boolean) -> Unit = {}
+    onDynamicColorChange: (Boolean) -> Unit = {},
+    selectedColorIndex: Int = 0,
+    onColorIndexChange: (Int) -> Unit = {}
 ) {
     var homeState by remember { mutableIntStateOf(1) } // 1: Empty, 2: Selection, 3: Progress
     var currentTab by remember { mutableIntStateOf(1) } // 1: Home, 2: Log, 3: About
@@ -102,7 +104,9 @@ fun KiraApp(
                     isFloatingNav = isFloatingNav,
                     onNavStyleChanged = { isFloatingNav = it },
                     isDynamicColor = isDynamicColor,
-                    onDynamicColorChanged = { onDynamicColorChange(it) }
+                    onDynamicColorChanged = onDynamicColorChange,
+                    selectedColorIndex = selectedColorIndex,
+                    onColorIndexChanged = onColorIndexChange
                 )
             } else {
                 when (currentTab) {

@@ -8,6 +8,7 @@ import com.nukeru.ui.KiraApp
 import com.nukeru.ui.theme.KiraAppTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 
@@ -17,10 +18,17 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             var useDynamicColor by remember { mutableStateOf(true) }
-            KiraAppTheme(dynamicColor = useDynamicColor) {
+            var selectedColorIndex by remember { mutableIntStateOf(0) }
+            
+            KiraAppTheme(
+                dynamicColor = useDynamicColor,
+                colorIndex = selectedColorIndex
+            ) {
                 KiraApp(
                     isDynamicColor = useDynamicColor,
-                    onDynamicColorChange = { useDynamicColor = it }
+                    onDynamicColorChange = { useDynamicColor = it },
+                    selectedColorIndex = selectedColorIndex,
+                    onColorIndexChange = { selectedColorIndex = it }
                 )
             }
         }

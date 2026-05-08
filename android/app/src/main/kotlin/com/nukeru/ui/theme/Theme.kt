@@ -10,6 +10,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -55,24 +56,48 @@ fun KiraAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
+    colorIndex: Int = 0,
     content: @Composable () -> Unit
 ) {
+    val presetC1 = when(colorIndex) {
+        0 -> Color(0xFFC5E384) // Pistachio
+        1 -> Color(0xFFC2D8C4) // Matcha
+        2 -> Color(0xFF700143) // Tyrian
+        3 -> Color(0xFF385144) // Moss
+        else -> md_theme_light_primary
+    }
+    val presetC2 = when(colorIndex) {
+        0 -> Color(0xFF200F07)
+        1 -> Color(0xFF222222)
+        2 -> Color(0xFFF8EDAD)
+        3 -> Color(0xFFF8F5F2)
+        else -> md_theme_light_onPrimary
+    }
+
+    val customColorScheme = if (darkTheme) DarkColorScheme else LightColorScheme.copy(
+        primary = presetC1,
+        onPrimary = presetC2,
+        primaryContainer = presetC1,
+        onPrimaryContainer = presetC2,
+        secondaryContainer = presetC1,
+        onSecondaryContainer = presetC2,
+        tertiaryContainer = presetC1,
+        onTertiaryContainer = presetC2,
+        surfaceTint = presetC1
+    )
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        else -> customColorScheme
     }
     
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = android.graphics.Color.TRANSPARENT
-            window.navigationBarColor = android.graphics.Color.TRANSPARENT
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
             WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !darkTheme
         }
