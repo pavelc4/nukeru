@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::{BufReader, Read};
+use std::os::fd::FromRawFd;
 
 use anyhow::{Context, Result, bail};
 use zip::ZipArchive;
@@ -10,8 +11,20 @@ pub struct OtaZipInfo {
     pub properties: String,
 }
 
+pub fn open_zip(path: &str) -> Result<File> {
+    if let Some(fd_str) = path.strip_prefix("FD:") {
+        let fd: i32 = fd_str.parse().context("Invalid FD string")?;
+        let orig = unsafe { File::from_raw_fd(fd) };
+        let cloned = orig.try_clone().context("Failed to dup FD")?;
+        std::mem::forget(orig); // prevent closing the FD owned by Kotlin
+        Ok(cloned)
+    } else {
+        File::open(path).with_context(|| format!("Failed to open: {}", path))
+    }
+}
+
 pub fn inspect_ota_zip(zip_path: &str) -> Result<OtaZipInfo> {
-    let file = File::open(zip_path).with_context(|| format!("Failed to open: {}", zip_path))?;
+    let file = open_zip(zip_path)?;
 
     let mut archive =
         ZipArchive::new(BufReader::new(file)).context("Failed to open ZIP archive")?;
@@ -29,7 +42,7 @@ pub fn inspect_ota_zip(zip_path: &str) -> Result<OtaZipInfo> {
     let (payload_offset, payload_size) = {
         let entry = archive
             .by_name("payload.bin")
-            .context("payload.bin tidak ditemukan")?;
+            .context("payload.bin not found")?;
 
         if entry.compression() != zip::CompressionMethod::Stored {
             bail!(

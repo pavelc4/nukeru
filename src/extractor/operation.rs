@@ -48,8 +48,7 @@ fn extract_partition(
     out_path: &Path,
     cb: &dyn ProgressCallback,
 ) -> Result<()> {
-    let mut src = File::open(req.zip_path.as_str())
-        .with_context(|| format!("Failed to open zip: {}", req.zip_path))?;
+    let mut src = crate::zip_utils::open_zip(req.zip_path.as_str())?;
 
     let dst = File::create(out_path)
         .with_context(|| format!("Failed to create output: {:?}", out_path))?;
@@ -77,6 +76,8 @@ fn extract_partition(
     Ok(())
 }
 
+use std::os::unix::fs::FileExt;
+
 fn apply_op<W: Write>(
     src: &mut File,
     data_offset: u64,
@@ -92,11 +93,8 @@ fn apply_op<W: Write>(
     let data_len = op.data_length.context("data_length missing")?;
     let op_offset = op.data_offset.context("data_offset missing")?;
 
-    src.seek(SeekFrom::Start(data_offset + op_offset))
-        .context("Seek failed")?;
-
     let mut compressed = vec![0u8; data_len as usize];
-    src.read_exact(&mut compressed)
+    src.read_exact_at(&mut compressed, data_offset + op_offset)
         .context("Read op data failed")?;
 
     if let Some(hash) = op.data_sha256_hash.as_deref() {

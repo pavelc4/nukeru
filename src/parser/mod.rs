@@ -32,8 +32,7 @@ pub struct PayloadReader {
 
 impl PayloadReader {
     pub fn open(zip_path: &str, payload_offset: u64) -> Result<Self> {
-        let file =
-            File::open(zip_path).with_context(|| format!("Tidak bisa buka: {}", zip_path))?;
+        let file = crate::zip_utils::open_zip(zip_path)?;
 
         let mut reader = BufReader::new(file);
         reader

@@ -81,23 +81,7 @@ fun KiraApp(
                 )
             )
         },
-        floatingActionButton = {
-            // Only show FAB in state 1 or 2, and NOT in settings
-            if (homeState < 3 && currentTab == 1 && !isSettingsOpen) {
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        if (homeState == 1) homeState = 2 else if (homeState == 2) homeState = 3
-                    },
-                    containerColor = MaterialTheme.colorScheme.inversePrimary,
-                    contentColor = MaterialTheme.colorScheme.onSurface,
-                    shape = RoundedCornerShape(24.dp)
-                ) {
-                    Icon(Icons.Outlined.CheckCircleOutline, "Select")
-                    Spacer(Modifier.width(8.dp))
-                    Text(text = if (homeState == 1) "Select .zip File" else "Extract 2 Partitions", fontWeight = FontWeight.Bold)
-                }
-            }
-        },
+
         floatingActionButtonPosition = FabPosition.End,
         bottomBar = {
             if (!isSettingsOpen) {
