@@ -949,9 +949,9 @@ fun KernelFlasherScreen() {
                         }
                     }
 
-                    // Main Power FAB (Rotates 135 degrees on spring when clicked, tilted -45 degrees by default)
+                    // Main Power FAB (Normal 0f by default, tilts to -45f when clicked)
                     val rotationAngle by animateFloatAsState(
-                        targetValue = if (isRebootMenuExpanded) 90f else -45f,
+                        targetValue = if (isRebootMenuExpanded) -45f else 0f,
                         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
                         label = "FabRotation"
                     )
