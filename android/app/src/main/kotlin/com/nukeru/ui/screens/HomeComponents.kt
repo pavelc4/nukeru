@@ -1,8 +1,11 @@
 package com.nukeru.ui.screens
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,6 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -30,36 +35,94 @@ import android.os.Build
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import kotlin.math.sin
+
+@Composable
+fun AospEmptyIllustration(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.primary,
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+) {
+    Box(
+        modifier = modifier
+            .size(140.dp)
+            .background(containerColor, shape = androidx.compose.foundation.shape.CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.size(80.dp)) {
+            val width = size.width
+            val height = size.height
+            
+            // Draw a minimalist AOSP-style Zip Capsule representation
+            val rectWidth = width * 0.5f
+            val rectHeight = height * 0.65f
+            val rectLeft = (width - rectWidth) / 2f
+            val rectTop = (height - rectHeight) / 2f
+            
+            // Draw the background dynamic rounded capsule
+            drawRoundRect(
+                color = color,
+                topLeft = androidx.compose.ui.geometry.Offset(rectLeft, rectTop),
+                size = androidx.compose.ui.geometry.Size(rectWidth, rectHeight),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(16.dp.toPx(), 16.dp.toPx()),
+                style = Stroke(width = 2.5f.dp.toPx())
+            )
+            
+            // Draw dynamic "zip teeth" lines inside the capsule representing a secure archive
+            val zipperTop = rectTop + 12.dp.toPx()
+            val zipperBottom = rectTop + rectHeight - 12.dp.toPx()
+            val zipperStep = 8.dp.toPx()
+            var zY = zipperTop
+            var toggle = false
+            while (zY <= zipperBottom) {
+                val lineLength = 5.dp.toPx()
+                val startX = width / 2f
+                val endX = if (toggle) startX + lineLength else startX - lineLength
+                drawLine(
+                    color = color,
+                    start = androidx.compose.ui.geometry.Offset(startX, zY),
+                    end = androidx.compose.ui.geometry.Offset(endX, zY),
+                    strokeWidth = 2.dp.toPx(),
+                    cap = StrokeCap.Round
+                )
+                zY += zipperStep
+                toggle = !toggle
+            }
+            
+            // Draw small dynamic floating circles (representing extracted clean partition blocks / pixels)
+            drawCircle(
+                color = color.copy(alpha = 0.8f),
+                radius = 4.dp.toPx(),
+                center = androidx.compose.ui.geometry.Offset(rectLeft - 10.dp.toPx(), rectTop + 10.dp.toPx())
+            )
+            drawCircle(
+                color = color.copy(alpha = 0.5f),
+                radius = 3.dp.toPx(),
+                center = androidx.compose.ui.geometry.Offset(rectLeft + rectWidth + 12.dp.toPx(), rectTop + rectHeight - 15.dp.toPx())
+            )
+        }
+    }
+}
 
 @Composable
 fun EmptyState(onSelectFile: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 80.dp),
+            .padding(top = 60.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .size(128.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(40.dp)
-                )
-                .clickable { onSelectFile() },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Folder,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer
+        AospEmptyIllustration(
+            modifier = Modifier.clickable(
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                indication = null,
+                onClick = onSelectFile
             )
-        }
+        )
         Spacer(modifier = Modifier.height(32.dp))
         Text(
             text = "Select Partitions to Extract",
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -138,37 +201,60 @@ fun SelectionState(
 
 @Composable
 fun PartitionSelectionItem(name: String, size: String, checked: Boolean, onToggle: () -> Unit) {
+    val animatedBgColor by animateColorAsState(
+        targetValue = if (checked) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
+                      else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f),
+        animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing),
+        label = "ItemBgColor"
+    )
+    val animatedBorderColor by animateColorAsState(
+        targetValue = if (checked) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
+                      else Color.Transparent,
+        animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing),
+        label = "ItemBorderColor"
+    )
+
     Card(
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = animatedBgColor,
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onToggle
+        border = if (checked) BorderStroke(1.dp, animatedBorderColor) else null,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onToggle() }
     ) {
         Row(
             modifier = Modifier
-                .padding(20.dp)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = name,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 0.1.sp
+                    ),
+                    color = if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                 )
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = size,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Checkbox(
                 checked = checked,
-                onCheckedChange = { onToggle() }
+                onCheckedChange = { onToggle() },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = MaterialTheme.colorScheme.primary,
+                    uncheckedColor = MaterialTheme.colorScheme.outline
+                )
             )
         }
     }
@@ -311,47 +397,49 @@ fun ProgressItem(name: String, progress: Float, totalOps: Int) {
     )
     val isComplete = animatedProgress >= 1f
 
+    val progressColor by animateColorAsState(
+        targetValue = if (isComplete) Color(0xFF4ADE80) else MaterialTheme.colorScheme.primary,
+        label = "ProgressColor"
+    )
+
     Card(
-        shape = RoundedCornerShape(32.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f),
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = name,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = if (isComplete) Color(0xFF4ADE80) else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "${(animatedProgress * 100).toInt()}%",
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                    color = if (isComplete) Color(0xFF4ADE80) else MaterialTheme.colorScheme.primary
+                    color = progressColor
                 )
             }
-            Spacer(modifier = Modifier.height(12.dp))
-            val trackColor = MaterialTheme.colorScheme.surfaceVariant
-            val progressColor = if (isComplete) Color(0xFF4ADE80) else MaterialTheme.colorScheme.primary
-
-            LinearProgressIndicator(
+            Spacer(modifier = Modifier.height(14.dp))
+            
+            // Premium Wavy progress line - active waves fade out into a flat line on success!
+            com.nukeru.ui.components.WavyLinearProgressIndicator(
                 progress = { animatedProgress },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(20.dp)
-                    .clip(RoundedCornerShape(50)),
                 color = progressColor,
-                trackColor = trackColor,
-                strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
-                drawStopIndicator = {}
+                trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                strokeWidth = 4.dp,
+                amplitude = if (isComplete) 0.dp else 4.dp,
+                modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            
+            Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = "Ops: ${(animatedProgress * totalOps).toInt()} / $totalOps",
                 style = MaterialTheme.typography.labelSmall,

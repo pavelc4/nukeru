@@ -29,10 +29,11 @@ fun SettingsScreen(
     isDynamicColor: Boolean,
     onDynamicColorChanged: (Boolean) -> Unit,
     selectedColorIndex: Int,
-    onColorIndexChanged: (Int) -> Unit
+    onColorIndexChanged: (Int) -> Unit,
+    selectedStyleMode: Int,
+    onStyleModeChange: (Int) -> Unit
 ) {
 
-    var selectedModeIndex by remember { mutableIntStateOf(1) } // 0=Muted, 1=Expressive, 2=Vibrant
     var isDebugMode by remember { mutableStateOf(false) }
     var logLevelIndex by remember { mutableIntStateOf(1) } // 1=Debug
 
@@ -84,9 +85,9 @@ fun SettingsScreen(
 
         AnimatedVisibility(visible = !isDynamicColor) {
             Card(
-                shape = RoundedCornerShape(32.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -133,6 +134,40 @@ fun SettingsScreen(
                                 modifier = Modifier.weight(1f)
                             )
                         }
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            ColorPreset(
+                                name = "KSU Mint", c1 = Color(0xFF006C4C), c2 = Color(0xFFFFFFFF),
+                                isSelected = selectedColorIndex == 4,
+                                onClick = { onColorIndexChanged(4) },
+                                modifier = Modifier.weight(1f)
+                            )
+                            ColorPreset(
+                                name = "Pixel Blue", c1 = Color(0xFF1A73E8), c2 = Color(0xFFFFFFFF),
+                                isSelected = selectedColorIndex == 5,
+                                onClick = { onColorIndexChanged(5) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            ColorPreset(
+                                name = "Lavender", c1 = Color(0xFF6750A4), c2 = Color(0xFFFFFFFF),
+                                isSelected = selectedColorIndex == 6,
+                                onClick = { onColorIndexChanged(6) },
+                                modifier = Modifier.weight(1f)
+                            )
+                            ColorPreset(
+                                name = "Terracotta", c1 = Color(0xFFB85C38), c2 = Color(0xFFFFFFFF),
+                                isSelected = selectedColorIndex == 7,
+                                onClick = { onColorIndexChanged(7) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
 
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -143,8 +178,8 @@ fun SettingsScreen(
                         )
                         SegmentedControl(
                             items = listOf("Muted", "Expressive", "Vibrant"),
-                            selectedIndex = selectedModeIndex,
-                            onItemSelected = { selectedModeIndex = it }
+                            selectedIndex = selectedStyleMode,
+                            onItemSelected = onStyleModeChange
                         )
                     }
                 }
@@ -155,9 +190,9 @@ fun SettingsScreen(
         // --- Developer Options ---
         SectionTitle("Developer Options")
         Card(
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             modifier = Modifier.fillMaxWidth(),
             onClick = { isDebugMode = !isDebugMode }
         ) {
@@ -180,9 +215,9 @@ fun SettingsScreen(
 
         AnimatedVisibility(visible = isDebugMode) {
             Card(
-                shape = RoundedCornerShape(32.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -243,8 +278,8 @@ fun SettingsScreen(
 fun SectionTitle(title: String) {
     Text(
         text = title,
-        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-        color = MaterialTheme.colorScheme.onSurface,
+        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+        color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(start = 8.dp)
     )
 }
@@ -257,12 +292,13 @@ fun NavStyleCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                             else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
         ),
-        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 0.dp else 1.dp),
+        border = if (isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)) else null,
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = modifier,
         onClick = onClick
     ) {
@@ -317,11 +353,13 @@ fun ThemeToggleCard(
     onClick: () -> Unit
 ) {
     Card(
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.inversePrimary else MaterialTheme.colorScheme.surface
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                             else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 0.dp else 1.dp),
+        border = if (isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)) else null,
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick
     ) {
@@ -352,8 +390,10 @@ fun ColorPreset(
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f)
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                             else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
         ),
+        border = if (isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)) else null,
         modifier = modifier,
         onClick = onClick
     ) {

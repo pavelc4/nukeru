@@ -28,7 +28,9 @@ fun NukeruApp(
     isDynamicColor: Boolean = true,
     onDynamicColorChange: (Boolean) -> Unit = {},
     selectedColorIndex: Int = 0,
-    onColorIndexChange: (Int) -> Unit = {}
+    onColorIndexChange: (Int) -> Unit = {},
+    selectedStyleMode: Int = 1,
+    onStyleModeChange: (Int) -> Unit = {}
 ) {
     var homeState by remember { mutableIntStateOf(1) } // 1: Empty, 2: Selection, 3: Progress
     var currentTab by remember { mutableIntStateOf(1) } // 1: Home, 2: Log, 3: About
@@ -122,7 +124,9 @@ fun NukeruApp(
                     isDynamicColor = isDynamicColor,
                     onDynamicColorChanged = onDynamicColorChange,
                     selectedColorIndex = selectedColorIndex,
-                    onColorIndexChanged = onColorIndexChange
+                    onColorIndexChanged = onColorIndexChange,
+                    selectedStyleMode = selectedStyleMode,
+                    onStyleModeChange = onStyleModeChange
                 )
             } else {
                 when (currentTab) {

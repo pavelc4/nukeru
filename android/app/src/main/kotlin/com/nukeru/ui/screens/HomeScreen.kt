@@ -6,7 +6,7 @@ import android.provider.OpenableColumns
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.Crossfade
+import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -103,7 +103,19 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp, vertical = 24.dp)
         ) {
-            Crossfade(targetState = currentState, label = "HomeStateCrossfade") { s ->
+            AnimatedContent(
+                targetState = currentState,
+                transitionSpec = {
+                    if (targetState > initialState) {
+                        (slideInHorizontally(animationSpec = tween(300, easing = FastOutSlowInEasing)) { it } + fadeIn(animationSpec = tween(300))) togetherWith
+                        (slideOutHorizontally(animationSpec = tween(300, easing = FastOutSlowInEasing)) { -it } + fadeOut(animationSpec = tween(300)))
+                    } else {
+                        (slideInHorizontally(animationSpec = tween(300, easing = FastOutSlowInEasing)) { -it } + fadeIn(animationSpec = tween(300))) togetherWith
+                        (slideOutHorizontally(animationSpec = tween(300, easing = FastOutSlowInEasing)) { it } + fadeOut(animationSpec = tween(300)))
+                    }
+                },
+                label = "HomeStateTransition"
+            ) { s ->
                 when (s) {
                     1 -> EmptyState(
                         onSelectFile = { launcher.launch("*/*") }
@@ -136,12 +148,12 @@ fun HomeScreen(
                     if (currentState == 1) launcher.launch("*/*")
                     else if (currentState == 2 && state.partitionsList.any { it.checked }) onStateChange(3)
                 },
-                containerColor = MaterialTheme.colorScheme.inversePrimary,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                shape = RoundedCornerShape(24.dp),
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(16.dp)
+                    .padding(24.dp)
             ) {
                 Icon(Icons.Outlined.CheckCircleOutline, "Select")
                 Spacer(Modifier.width(8.dp))

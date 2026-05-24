@@ -19,16 +19,20 @@ class MainActivity : ComponentActivity() {
         setContent {
             var useDynamicColor by remember { mutableStateOf(true) }
             var selectedColorIndex by remember { mutableIntStateOf(0) }
+            var selectedStyleMode by remember { mutableIntStateOf(1) } // 0=Muted, 1=Expressive, 2=Vibrant
             
             NukeruAppTheme(
                 dynamicColor = useDynamicColor,
-                colorIndex = selectedColorIndex
+                colorIndex = selectedColorIndex,
+                styleMode = selectedStyleMode
             ) {
                 NukeruApp(
                     isDynamicColor = useDynamicColor,
                     onDynamicColorChange = { useDynamicColor = it },
                     selectedColorIndex = selectedColorIndex,
-                    onColorIndexChange = { selectedColorIndex = it }
+                    onColorIndexChange = { selectedColorIndex = it },
+                    selectedStyleMode = selectedStyleMode,
+                    onStyleModeChange = { selectedStyleMode = it }
                 )
             }
         }
