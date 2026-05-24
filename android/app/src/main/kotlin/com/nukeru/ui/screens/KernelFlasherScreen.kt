@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nukeru.ui.components.WavyLinearProgressIndicator
+import androidx.compose.material.icons.automirrored.outlined.CompareArrows
 import com.nukeru.ui.components.WavyCircularProgressIndicator
 import kotlinx.coroutines.delay
 
@@ -51,7 +52,7 @@ fun KernelFlasherScreen() {
     // Trigger mock root check verification
     LaunchedEffect(isCheckingRoot) {
         if (isCheckingRoot) {
-            delay(1800)
+            delay(1500)
             isRootGranted = true
             isCheckingRoot = false
             consoleLogs.addAll(listOf(
@@ -77,7 +78,7 @@ fun KernelFlasherScreen() {
             
             var p = 0f
             while (p < 1.0f) {
-                delay(400)
+                delay(350)
                 p += 0.12f
                 flashProgress = p.coerceAtMost(1f)
                 if (p >= 0.36f && p < 0.48f) {
@@ -117,11 +118,11 @@ fun KernelFlasherScreen() {
             backupProgress = 0f
             var p = 0f
             while (p < 1.0f) {
-                delay(200)
+                delay(180)
                 p += 0.2f
                 backupProgress = p.coerceAtMost(1f)
             }
-            delay(300)
+            delay(200)
             consoleLogs.add("[BACKUP] Created partition image: /sdcard/Nukeru/Backups/backup_${part}_slot${activeSlot}.img")
             backupProgressPartition = null
             showBackupDialog = false
@@ -131,7 +132,7 @@ fun KernelFlasherScreen() {
     // Trigger mock reboot
     LaunchedEffect(isRebooting) {
         if (isRebooting) {
-            delay(2000)
+            delay(1800)
             isRebooting = false
             showRebootDialog = false
         }
@@ -141,7 +142,7 @@ fun KernelFlasherScreen() {
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .padding(top = 8.dp, start = 16.dp, end = 16.dp, bottom = 120.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // TOP PREVIEW CONTROLLER: Root Simulator Chip
@@ -191,76 +192,74 @@ fun KernelFlasherScreen() {
             label = "RootStateTransition"
         ) { targetRootState ->
             if (!targetRootState) {
-                // STATE A: Root Required Empty State Screen
+                // STATE A: Root Required Empty State Screen (About-inspired Card style)
                 Card(
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
-                    ),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)),
+                    border = null,
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
+                        modifier = Modifier.padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        // Locks & Shield Custom Vector Canvas representation
-                        Box(
-                            modifier = Modifier
-                                .size(96.dp)
-                                .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.25f), CircleShape),
-                            contentAlignment = Alignment.Center
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start
                         ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Lock,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.size(44.dp)
-                            )
-                        }
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.colorScheme.errorContainer),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Lock,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "Root Permission Required",
-                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                text = "Root Access Required",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Text(
-                                text = "KernelFlasher interacts directly with partition blocks to flash AnyKernel3 archives and modify device slots.",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(horizontal = 8.dp)
-                            )
                         }
 
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                            thickness = 1.dp
+                        Text(
+                            text = "KernelFlasher operates directly on locked hardware partition blocks to read/write boot and ramdisk sectors. This operation is locked behind superuser permission scopes.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 20.sp,
+                            modifier = Modifier.fillMaxWidth()
                         )
 
                         Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Text(
-                                text = "How to grant access:",
-                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 verticalAlignment = Alignment.Top
                             ) {
-                                Icon(Icons.Outlined.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("1", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.primary)
+                                }
                                 Text(
                                     text = "Ensure your phone is rooted with Magisk, KernelSU, or APatch.",
                                     style = MaterialTheme.typography.bodyMedium,
@@ -272,7 +271,14 @@ fun KernelFlasherScreen() {
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 verticalAlignment = Alignment.Top
                             ) {
-                                Icon(Icons.Outlined.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("2", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.primary)
+                                }
                                 Text(
                                     text = "When prompted by your root manager, grant Nukeru 'Superuser' access.",
                                     style = MaterialTheme.typography.bodyMedium,
@@ -281,14 +287,12 @@ fun KernelFlasherScreen() {
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
-
                         Button(
                             onClick = { isCheckingRoot = true },
                             enabled = !isCheckingRoot,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(52.dp),
+                                .height(48.dp),
                             shape = RoundedCornerShape(16.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                         ) {
@@ -297,18 +301,18 @@ fun KernelFlasherScreen() {
                                     progress = { 0.4f },
                                     color = MaterialTheme.colorScheme.onError,
                                     trackColor = Color.Transparent,
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier.size(20.dp)
                                 )
                             } else {
-                                Icon(Icons.Outlined.Shield, contentDescription = null)
+                                Icon(Icons.Outlined.Shield, contentDescription = null, modifier = Modifier.size(20.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Grant Root Access & Verify", fontWeight = FontWeight.SemiBold)
+                                Text("Grant Superuser Access", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold))
                             }
                         }
                     }
                 }
             } else {
-                // STATE B: Premium Kernel Flasher Dashboard
+                // STATE B: Premium Kernel Flasher Dashboard (About-inspired Card style)
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -316,41 +320,41 @@ fun KernelFlasherScreen() {
                     // 1. A/B Slot Manager Panel
                     Card(
                         shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
-                        ),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)),
+                        border = null,
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp),
-                            verticalArrangement = Arrangement.spacedBy(14.dp)
-                        ) {
+                        Column(modifier = Modifier.padding(24.dp)) {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(bottom = 20.dp)
                             ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(MaterialTheme.colorScheme.primaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.AutoMirrored.Outlined.CompareArrows,
+                                        contentDescription = "Slots",
+                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
                                         text = "A/B Partition Slots",
                                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                        color = MaterialTheme.colorScheme.primary
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Text(
-                                        text = "Displays active running system partitions",
+                                        text = "Manage system partitions and active slots",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), RoundedCornerShape(8.dp))
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                ) {
-                                    Text(
-                                        text = "Active Slot: $activeSlot",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
@@ -360,28 +364,26 @@ fun KernelFlasherScreen() {
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 // Slot A Button
-                                OutlinedCard(
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = if (activeSlot == "A") MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-                                                         else Color.Transparent
-                                    ),
-                                    border = CardDefaults.outlinedCardBorder().copy(
-                                        brush = androidx.compose.ui.graphics.SolidColor(
-                                            if (activeSlot == "A") MaterialTheme.colorScheme.primary
-                                            else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
-                                        )
-                                    ),
+                                Box(
                                     modifier = Modifier
                                         .weight(1f)
+                                        .clip(RoundedCornerShape(16.dp))
                                         .clickable { activeSlot = "A" }
+                                        .background(
+                                            if (activeSlot == "A") MaterialTheme.colorScheme.primaryContainer
+                                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = if (activeSlot == "A") MaterialTheme.colorScheme.primary
+                                                    else Color.Transparent,
+                                            shape = RoundedCornerShape(16.dp)
+                                        )
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    Column(
-                                        modifier = Modifier.padding(14.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        Text("SLOT A", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text("SLOT A", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
                                         Text(
                                             text = if (activeSlot == "A") "Running (Active)" else "Bootable",
                                             style = MaterialTheme.typography.bodySmall,
@@ -391,28 +393,26 @@ fun KernelFlasherScreen() {
                                 }
 
                                 // Slot B Button
-                                OutlinedCard(
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = if (activeSlot == "B") MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-                                                         else Color.Transparent
-                                    ),
-                                    border = CardDefaults.outlinedCardBorder().copy(
-                                        brush = androidx.compose.ui.graphics.SolidColor(
-                                            if (activeSlot == "B") MaterialTheme.colorScheme.primary
-                                            else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
-                                        )
-                                    ),
+                                Box(
                                     modifier = Modifier
                                         .weight(1f)
+                                        .clip(RoundedCornerShape(16.dp))
                                         .clickable { activeSlot = "B" }
+                                        .background(
+                                            if (activeSlot == "B") MaterialTheme.colorScheme.primaryContainer
+                                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = if (activeSlot == "B") MaterialTheme.colorScheme.primary
+                                                    else Color.Transparent,
+                                            shape = RoundedCornerShape(16.dp)
+                                        )
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    Column(
-                                        modifier = Modifier.padding(14.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        Text("SLOT B", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text("SLOT B", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
                                         Text(
                                             text = if (activeSlot == "B") "Running (Active)" else "Bootable",
                                             style = MaterialTheme.typography.bodySmall,
@@ -427,28 +427,36 @@ fun KernelFlasherScreen() {
                     // 2. Kernel Status Info
                     Card(
                         shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
-                        ),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)),
+                        border = null,
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
-                            modifier = Modifier.padding(20.dp),
+                            modifier = Modifier.padding(24.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            horizontalArrangement = Arrangement.Start
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(44.dp)
-                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), CircleShape),
+                                    .size(40.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.colorScheme.tertiaryContainer),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Outlined.Memory, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                                Icon(
+                                    Icons.Outlined.Memory,
+                                    contentDescription = "Kernel",
+                                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                                    modifier = Modifier.size(20.dp)
+                                )
                             }
+                            Spacer(modifier = Modifier.width(16.dp))
                             Column {
                                 Text(
                                     text = "Kernel Version",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     text = "Linux 6.1.75-android15-9-g0123abc4567-ab123456 #1 SMP PREEMPT Sunday May 24 2026",
@@ -462,78 +470,93 @@ fun KernelFlasherScreen() {
                     // 3. Backup & Restore Center
                     Card(
                         shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
-                        ),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)),
+                        border = null,
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
+                        Column(modifier = Modifier.padding(24.dp)) {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(bottom = 20.dp)
                             ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Storage,
+                                        contentDescription = "Backup",
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
                                         text = "On-Device Backups",
                                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                        color = MaterialTheme.colorScheme.primary
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Text(
-                                        text = "Backup partitions directly to your device storage",
+                                        text = "Local backup images stored in internal storage",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
-                                Box(
-                                    modifier = Modifier
-                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), CircleShape)
-                                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                                ) {
-                                    Text("3 Images Saved", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.primary)
-                                }
                             }
 
-                            val partitions = listOf("boot", "init_boot", "vendor_boot", "dtbo")
-                            partitions.forEach { part ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-                                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                val partitions = listOf("boot", "init_boot", "vendor_boot", "dtbo")
+                                partitions.forEach { part ->
                                     Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(20.dp))
+                                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                                            .padding(horizontal = 16.dp, vertical = 8.dp),
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                        horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        Icon(Icons.Outlined.Storage, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
-                                        Text(part, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
-                                    }
-                                    
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        TextButton(
-                                            onClick = {
-                                                backupProgressPartition = part
-                                                showBackupDialog = true
-                                            },
-                                            shape = RoundedCornerShape(8.dp)
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                                         ) {
-                                            Icon(Icons.Outlined.SaveAlt, contentDescription = null, modifier = Modifier.size(16.dp))
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            Text("Backup")
+                                            Icon(
+                                                Icons.Outlined.Storage,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Text(
+                                                text = part,
+                                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
                                         }
-                                        OutlinedButton(
-                                            onClick = { /* Simulated restore action */ },
-                                            shape = RoundedCornerShape(8.dp),
-                                            contentPadding = PaddingValues(horizontal = 8.dp)
-                                        ) {
-                                            Text("Restore")
+                                        
+                                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            TextButton(
+                                                onClick = {
+                                                    backupProgressPartition = part
+                                                    showBackupDialog = true
+                                                },
+                                                shape = RoundedCornerShape(12.dp)
+                                            ) {
+                                                Icon(Icons.Outlined.SaveAlt, contentDescription = null, modifier = Modifier.size(16.dp))
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text("Backup", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold))
+                                            }
+                                            OutlinedButton(
+                                                onClick = { /* Simulated restore action */ },
+                                                shape = RoundedCornerShape(12.dp),
+                                                contentPadding = PaddingValues(horizontal = 12.dp)
+                                            ) {
+                                                Text("Restore", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold))
+                                            }
                                         }
                                     }
                                 }
@@ -544,37 +567,59 @@ fun KernelFlasherScreen() {
                     // 4. Flash AnyKernel3 Zip / Image
                     Card(
                         shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
-                        ),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)),
+                        border = null,
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Text(
-                                text = "Flash Kernel Bundle",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.primary
-                            )
-
-                            // Interactive Zip Selection Box
-                            OutlinedCard(
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        selectedFileUri = "/storage/emulated/0/Download/kernels/AnyKernel3-KSU-6.1-Pixel.zip"
-                                        consoleLogs.add("[FILE] Loaded zip file target: AnyKernel3-KSU-6.1-Pixel.zip")
-                                    }
+                        Column(modifier = Modifier.padding(24.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(bottom = 20.dp)
                             ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(MaterialTheme.colorScheme.primaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.FolderZip,
+                                        contentDescription = "Flash",
+                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = "Flash Kernel Bundle",
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = "Select and flash kernel updates directly on device",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+
+                            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                // Interactive Zip Selection Box (About-inspired list item row style)
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                        .clip(RoundedCornerShape(20.dp))
+                                        .clickable {
+                                            selectedFileUri = "/storage/emulated/0/Download/kernels/AnyKernel3-KSU-6.1-Pixel.zip"
+                                            consoleLogs.add("[FILE] Loaded zip file target: AnyKernel3-KSU-6.1-Pixel.zip")
+                                        }
+                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                                        .padding(14.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Row(
                                         modifier = Modifier.weight(1f),
@@ -585,7 +630,8 @@ fun KernelFlasherScreen() {
                                         Column {
                                             Text(
                                                 text = if (selectedFileUri != null) "AnyKernel3-KSU-6.1-Pixel.zip" else "Choose AnyKernel3 Bundle",
-                                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                                                color = MaterialTheme.colorScheme.onSurface
                                             )
                                             Text(
                                                 text = selectedFileUri ?: "Select AnyKernel3 zip or raw boot.img",
@@ -601,73 +647,77 @@ fun KernelFlasherScreen() {
                                         }
                                     }
                                 }
-                            }
 
-                            // Flash Target Slot Segmented Switch
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Text("Flash Destination", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-                                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                                        .padding(4.dp)
-                                ) {
-                                    listOf("active" to "Active Slot", "inactive" to "Inactive Slot", "both" to "Both Slots").forEach { (opt, label) ->
-                                        Box(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .background(
-                                                    if (targetSlotOption == opt) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
-                                                    else Color.Transparent
+                                // Flash Target Slot Segmented Switch
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text(
+                                        "Flash Destination",
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(20.dp))
+                                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                                            .padding(6.dp)
+                                    ) {
+                                        listOf("active" to "Active Slot", "inactive" to "Inactive Slot", "both" to "Both Slots").forEach { (opt, label) ->
+                                            Box(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .clip(RoundedCornerShape(12.dp))
+                                                    .background(
+                                                        if (targetSlotOption == opt) MaterialTheme.colorScheme.primaryContainer
+                                                        else Color.Transparent
+                                                    )
+                                                    .clickable { targetSlotOption = opt }
+                                                    .padding(vertical = 10.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = label,
+                                                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                                                    color = if (targetSlotOption == opt) MaterialTheme.colorScheme.onPrimaryContainer
+                                                            else MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
-                                                .clickable { targetSlotOption = opt }
-                                                .padding(vertical = 10.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(
-                                                text = label,
-                                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
-                                                color = if (targetSlotOption == opt) MaterialTheme.colorScheme.primary
-                                                        else MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
+                                            }
                                         }
                                     }
                                 }
-                            }
 
-                            // Flashing active progress status
-                            if (isFlashing) {
-                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text("Patching and Flashing kernel...", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
-                                        Text("${(flashProgress * 100).toInt()}%", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.primary)
+                                // Flashing active progress status
+                                if (isFlashing) {
+                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text("Patching and Flashing kernel...", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
+                                            Text("${(flashProgress * 100).toInt()}%", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.primary)
+                                        }
+                                        WavyLinearProgressIndicator(
+                                            progress = { flashProgress },
+                                            color = MaterialTheme.colorScheme.primary,
+                                            trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                                        )
                                     }
-                                    WavyLinearProgressIndicator(
-                                        progress = { flashProgress },
-                                        color = MaterialTheme.colorScheme.primary,
-                                        trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                                    )
                                 }
-                            }
 
-                            Button(
-                                onClick = { isFlashing = true },
-                                enabled = selectedFileUri != null && !isFlashing,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(52.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                            ) {
-                                Icon(Icons.Outlined.FlashOn, contentDescription = null)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Execute Flash Script", fontWeight = FontWeight.Bold)
+                                Button(
+                                    onClick = { isFlashing = true },
+                                    enabled = selectedFileUri != null && !isFlashing,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(48.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                ) {
+                                    Icon(Icons.Outlined.FlashOn, contentDescription = null, modifier = Modifier.size(20.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Execute Flash Script", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold))
+                                }
                             }
                         }
                     }
@@ -675,42 +725,72 @@ fun KernelFlasherScreen() {
                     // 5. Console Terminal
                     Card(
                         shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF0F110D)),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)),
+                        border = null,
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp)
-                                .verticalScroll(rememberScrollState())
-                        ) {
-                            Text(
-                                text = "ROOT LOGSHELL OUTPUT",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
-                                color = Color.Gray,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-                            if (consoleLogs.isEmpty()) {
-                                Text(
-                                    text = "Ready. Select an AnyKernel3 zip to flash, or run a partition backup.",
-                                    fontFamily = FontFamily.Monospace,
-                                    fontSize = 11.sp,
-                                    color = Color.DarkGray
-                                )
-                            } else {
-                                consoleLogs.forEach { log ->
-                                    Text(
-                                        text = log,
-                                        fontFamily = FontFamily.Monospace,
-                                        fontSize = 11.sp,
-                                        color = if (log.startsWith("$") || log.startsWith("[ROOT]")) Color(0xFF4ADE80)
-                                                else if (log.contains("Success") || log.contains("OKAY")) Color.Cyan
-                                                else if (log.startsWith("AnyKernel3")) Color(0xFFFACC15)
-                                                else Color.LightGray,
-                                        modifier = Modifier.padding(vertical = 2.dp)
+                        Column(modifier = Modifier.padding(24.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Terminal,
+                                        contentDescription = "Logs",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(20.dp)
                                     )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = "Console Output",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(180.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(Color(0xFF0F110D))
+                                    .padding(16.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .verticalScroll(rememberScrollState())
+                                ) {
+                                    if (consoleLogs.isEmpty()) {
+                                        Text(
+                                            text = "Ready. Select an AnyKernel3 zip to flash, or run a partition backup.",
+                                            fontFamily = FontFamily.Monospace,
+                                            fontSize = 11.sp,
+                                            color = Color.DarkGray
+                                        )
+                                    } else {
+                                        consoleLogs.forEach { log ->
+                                            Text(
+                                                text = log,
+                                                fontFamily = FontFamily.Monospace,
+                                                fontSize = 11.sp,
+                                                color = if (log.startsWith("$") || log.startsWith("[ROOT]")) Color(0xFF4ADE80)
+                                                        else if (log.contains("Success") || log.contains("OKAY")) Color.Cyan
+                                                        else if (log.startsWith("AnyKernel3")) Color(0xFFFACC15)
+                                                        else Color.LightGray,
+                                                modifier = Modifier.padding(vertical = 2.dp)
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -719,66 +799,96 @@ fun KernelFlasherScreen() {
                     // 6. Advanced Reboot Panel & Diagnostics
                     Card(
                         shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
-                        ),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)),
+                        border = null,
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Text(
-                                text = "Device Controls & Diagnostics",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.primary
-                            )
-
-                            // Quick Log dump triggers
+                        Column(modifier = Modifier.padding(24.dp)) {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(bottom = 20.dp)
                             ) {
-                                listOf("Dmesg", "Logcat", "Ramoops").forEach { dump ->
-                                    OutlinedButton(
-                                        onClick = {
-                                            consoleLogs.add("[DIAG] Generated standard $dump diagnostic report to: /sdcard/Nukeru/Logs/${dump.lowercase()}.txt")
-                                        },
-                                        shape = RoundedCornerShape(10.dp),
-                                        modifier = Modifier.weight(1f),
-                                        contentPadding = PaddingValues(0.dp)
-                                    ) {
-                                        Icon(Icons.Outlined.Troubleshoot, contentDescription = null, modifier = Modifier.size(14.dp))
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(dump, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold))
-                                    }
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(MaterialTheme.colorScheme.tertiaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.RestartAlt,
+                                        contentDescription = "Diagnostics",
+                                        tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = "Diagnostics & Reboot",
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = "Generate kernel reports and control device status",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
                             }
 
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                // Quick Log dump triggers
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    listOf("Dmesg", "Logcat", "Ramoops").forEach { dump ->
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                                                .clickable {
+                                                    consoleLogs.add("[DIAG] Generated standard $dump diagnostic report to: /sdcard/Nukeru/Logs/${dump.lowercase()}.txt")
+                                                }
+                                                .padding(vertical = 12.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                                Icon(Icons.Outlined.Troubleshoot, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)
+                                                Text(dump, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onSurface)
+                                            }
+                                        }
+                                    }
+                                }
 
-                            // Advanced Reboot triggers
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                listOf("System" to "Reboot", "Recovery" to "Recovery", "Bootloader" to "Fastboot").forEach { (target, label) ->
-                                    Button(
-                                        onClick = {
-                                            rebootTarget = target
-                                            showRebootDialog = true
-                                        },
-                                        shape = RoundedCornerShape(10.dp),
-                                        modifier = Modifier.weight(1f),
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                        ),
-                                        contentPadding = PaddingValues(0.dp)
-                                    ) {
-                                        Icon(Icons.Outlined.RestartAlt, contentDescription = null, modifier = Modifier.size(14.dp))
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(label, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+
+                                // Advanced Reboot triggers
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    listOf("System" to "Reboot", "Recovery" to "Recovery", "Bootloader" to "Fastboot").forEach { (target, label) ->
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                                .clickable {
+                                                    rebootTarget = target
+                                                    showRebootDialog = true
+                                                }
+                                                .padding(vertical = 12.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                                Icon(Icons.Outlined.RestartAlt, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                                                Text(label, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onPrimaryContainer)
+                                            }
+                                        }
                                     }
                                 }
                             }
