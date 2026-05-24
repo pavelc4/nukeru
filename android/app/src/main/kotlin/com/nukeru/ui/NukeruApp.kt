@@ -10,6 +10,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.CheckCircleOutline
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.FlashOn
+import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +24,7 @@ import com.nukeru.ui.screens.HistoryScreen
 import com.nukeru.ui.screens.HomeScreen
 import com.nukeru.ui.screens.SettingsScreen
 import com.nukeru.ui.screens.FlasherScreen
+import com.nukeru.ui.screens.KernelFlasherScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,15 +37,16 @@ fun NukeruApp(
     onStyleModeChange: (Int) -> Unit = {}
 ) {
     var homeState by remember { mutableIntStateOf(1) } // 1: Empty, 2: Selection, 3: Progress
-    var currentTab by remember { mutableIntStateOf(1) } // 1: Home, 2: Log, 3: About
+    var currentTab by remember { mutableIntStateOf(1) } // 1: Home, 2: OTG Flasher, 3: Kernel Flasher, 4: Log, 5: About
     var isFloatingNav by remember { mutableStateOf(true) } // Toggle for Nav mode
     var isSettingsOpen by remember { mutableStateOf(false) }
 
     val navItems = listOf(
         NavItem("Home", Icons.Outlined.Home, 1),
         NavItem("Flasher", Icons.Outlined.FlashOn, 2),
-        NavItem("Log", Icons.Outlined.History, 3),
-        NavItem("About", Icons.Outlined.Info, 4)
+        NavItem("Kernel", Icons.Outlined.Memory, 3),
+        NavItem("Log", Icons.Outlined.History, 4),
+        NavItem("About", Icons.Outlined.Info, 5)
     )
 
     androidx.activity.compose.BackHandler(enabled = currentTab == 1 && homeState == 2) {
@@ -59,8 +62,9 @@ fun NukeruApp(
                         text = if (isSettingsOpen) "General Settings" else when(currentTab) {
                             1 -> "Nukeru"
                             2 -> "Fastboot Flasher"
-                            3 -> "Log History"
-                            4 -> "About Nukeru"
+                            3 -> "Kernel Flasher"
+                            4 -> "Log History"
+                            5 -> "About Nukeru"
                             else -> "Nukeru"
                         },
                         style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
@@ -144,9 +148,12 @@ fun NukeruApp(
                         FlasherScreen()
                     }
                     3 -> {
-                        HistoryScreen()
+                        KernelFlasherScreen()
                     }
                     4 -> {
+                        HistoryScreen()
+                    }
+                    5 -> {
                         AboutScreen()
                     }
                 } 
