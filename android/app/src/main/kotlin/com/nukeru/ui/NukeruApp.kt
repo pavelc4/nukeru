@@ -9,6 +9,7 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.CheckCircleOutline
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.FlashOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +22,7 @@ import com.nukeru.ui.screens.AboutScreen
 import com.nukeru.ui.screens.HistoryScreen
 import com.nukeru.ui.screens.HomeScreen
 import com.nukeru.ui.screens.SettingsScreen
+import com.nukeru.ui.screens.FlasherScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,8 +41,9 @@ fun NukeruApp(
 
     val navItems = listOf(
         NavItem("Home", Icons.Outlined.Home, 1),
-        NavItem("Log", Icons.Outlined.History, 2),
-        NavItem("About", Icons.Outlined.Info, 3)
+        NavItem("Flasher", Icons.Outlined.FlashOn, 2),
+        NavItem("Log", Icons.Outlined.History, 3),
+        NavItem("About", Icons.Outlined.Info, 4)
     )
 
     androidx.activity.compose.BackHandler(enabled = currentTab == 1 && homeState == 2) {
@@ -55,8 +58,9 @@ fun NukeruApp(
                     Text(
                         text = if (isSettingsOpen) "General Settings" else when(currentTab) {
                             1 -> "Nukeru"
-                            2 -> "Log History"
-                            3 -> "About Nukeru"
+                            2 -> "Fastboot Flasher"
+                            3 -> "Log History"
+                            4 -> "About Nukeru"
                             else -> "Nukeru"
                         },
                         style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
@@ -137,9 +141,12 @@ fun NukeruApp(
                         )
                     }
                     2 -> {
-                        HistoryScreen()
+                        FlasherScreen()
                     }
                     3 -> {
+                        HistoryScreen()
+                    }
+                    4 -> {
                         AboutScreen()
                     }
                 } 
