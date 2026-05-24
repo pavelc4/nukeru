@@ -27,7 +27,7 @@ data class NavItem(
 )
 
 @Composable
-fun KiraBottomNav(
+fun NukeruBottomNav(
     items: List<NavItem>,
     currentTab: Int,
     onTabSelected: (Int) -> Unit,

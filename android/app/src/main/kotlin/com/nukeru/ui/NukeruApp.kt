@@ -15,7 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.nukeru.ui.components.KiraBottomNav
+import com.nukeru.ui.components.NukeruBottomNav
 import com.nukeru.ui.components.NavItem
 import com.nukeru.ui.screens.AboutScreen
 import com.nukeru.ui.screens.HistoryScreen
@@ -24,7 +24,7 @@ import com.nukeru.ui.screens.SettingsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun KiraApp(
+fun NukeruApp(
     isDynamicColor: Boolean = true,
     onDynamicColorChange: (Boolean) -> Unit = {},
     selectedColorIndex: Int = 0,
@@ -47,10 +47,10 @@ fun KiraApp(
                 title = {
                     Text(
                         text = if (isSettingsOpen) "General Settings" else when(currentTab) {
-                            1 -> "Kira"
+                            1 -> "Nukeru"
                             2 -> "Log History"
-                            3 -> "About Kira"
-                            else -> "Kira"
+                            3 -> "About Nukeru"
+                            else -> "Nukeru"
                         },
                         style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
@@ -88,7 +88,7 @@ fun KiraApp(
         floatingActionButtonPosition = FabPosition.End,
         bottomBar = {
             if (!isSettingsOpen) {
-                KiraBottomNav(
+                NukeruBottomNav(
                     items = navItems,
                     currentTab = currentTab,
                     onTabSelected = { currentTab = it },
@@ -110,20 +110,20 @@ fun KiraApp(
                 )
             } else {
                 when (currentTab) {
-                1 -> {
-                    HomeScreen(
-                        currentState = homeState,
-                        onStateChange = { newState -> homeState = newState }
-                    )
-                }
-                2 -> {
-                    HistoryScreen()
-                }
-                3 -> {
-                    AboutScreen()
-                }
+                    1 -> {
+                        HomeScreen(
+                            currentState = homeState,
+                            onStateChange = { newState -> homeState = newState }
+                        )
+                    }
+                    2 -> {
+                        HistoryScreen()
+                    }
+                    3 -> {
+                        AboutScreen()
+                    }
+                } 
             } 
         } 
-        } 
     } 
-} 
+}

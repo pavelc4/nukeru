@@ -24,6 +24,9 @@ import android.widget.Toast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nukeru.backend.NukeruJni
+import com.nukeru.backend.ExtractionService
+import android.content.Intent
+import android.os.Build
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -179,13 +182,10 @@ fun ProgressState(
     onComplete: () -> Unit
 ) {
     val context = LocalContext.current
-    var isDone by remember { mutableStateOf(false) }
-    var statusText by remember { mutableStateOf("Extracting...") }
-    val progressMap = remember { mutableStateMapOf<String, Float>() }
-    var savedDirStr by remember { mutableStateOf("") }
+    val state = ExtractionService.ExtractionState
 
     LaunchedEffect(Unit) {
-        withContext(Dispatchers.IO) {
+        if (!state.isRunning && !state.isDone) {
             val baseDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS)
             val nukeruDir = java.io.File(baseDir, "Nukeru")
             
@@ -199,44 +199,19 @@ fun ProgressState(
                 sessionDir.mkdirs()
             }
             val outDir = sessionDir.absolutePath
-            savedDirStr = outDir
-
             val selectedNames = partitions.joinToString(",") { it.name }
-            
-            NukeruJni.startExtraction(zipFdPath, outDir, selectedNames)
 
-            while (true) {
-                val msg = NukeruJni.pollProgress()
-                if (msg == "WAIT" || msg == "NONE") {
-                    delay(50)
-                    continue
-                }
-                if (msg == "DISCONNECTED" || msg == "FINISHED") {
-                    statusText = "Extraction Complete!"
-                    isDone = true
-                    break
-                }
-                if (msg.startsWith("FATAL|")) {
-                    statusText = "Error: ${msg.substring(6)}"
-                    isDone = true
-                    break
-                }
-                if (msg.startsWith("P|")) {
-                    val parts = msg.split("|")
-                    if (parts.size >= 5) {
-                        val pName = parts[1]
-                        val opsDone = parts[2].toFloatOrNull() ?: 0f
-                        val opsTotal = parts[3].toFloatOrNull() ?: 1f
-                        val prog = if (opsTotal > 0f) opsDone / opsTotal else 0f
-                        progressMap[pName] = prog
-                    }
-                }
-                if (msg.startsWith("D|")) {
-                    val parts = msg.split("|")
-                    if (parts.size >= 3) {
-                        progressMap[parts[1]] = 1f
-                    }
-                }
+            val intent = Intent(context, ExtractionService::class.java).apply {
+                putExtra("zipFdPath", zipFdPath)
+                putExtra("outDir", outDir)
+                putExtra("selectedNames", selectedNames)
+                putExtra("zipName", zipName)
+            }
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
             }
         }
     }
@@ -246,57 +221,59 @@ fun ProgressState(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-        Card(
-            shape = RoundedCornerShape(32.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-            ),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(24.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Card(
+                shape = RoundedCornerShape(32.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                ),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                if (!isDone) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onTertiaryContainer,
-                        strokeWidth = 2.dp
+                Row(
+                    modifier = Modifier.padding(24.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    if (state.isRunning) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            strokeWidth = 2.dp
+                        )
+                    }
+                    Text(
+                        text = state.statusText,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
                 }
-                Text(
-                    text = statusText,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                )
             }
-        }
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.weight(1f, fill = false)
-        ) {
-            items(partitions) { p ->
-                val currentProg = progressMap[p.name] ?: 0f
-                ProgressItem(name = p.name, progress = currentProg, totalOps = p.opCount)
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.weight(1f, fill = false)
+            ) {
+                items(partitions) { p ->
+                    val currentProg = state.progressMap[p.name] ?: 0f
+                    ProgressItem(name = p.name, progress = currentProg, totalOps = p.opCount)
+                }
             }
-        }
 
-        if (isDone) {
-            LaunchedEffect(savedDirStr) {
-                if (savedDirStr.isNotEmpty()) {
-                    Toast.makeText(context, "Files saved to $savedDirStr", Toast.LENGTH_LONG).show()
+            if (state.isDone) {
+                LaunchedEffect(state.savedDir) {
+                    if (state.savedDir.isNotEmpty() && state.errorText == null) {
+                        Toast.makeText(context, "Files saved to ${state.savedDir}", Toast.LENGTH_LONG).show()
+                    }
                 }
             }
         }
-        
-        // This closes the Column
-        }
 
-        if (isDone) {
+        if (state.isDone) {
             ExtendedFloatingActionButton(
-                onClick = onComplete,
+                onClick = {
+                    state.isDone = false
+                    state.isRunning = false
+                    onComplete()
+                },
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 shape = RoundedCornerShape(24.dp),

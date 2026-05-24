@@ -52,7 +52,7 @@ private val LightColorScheme = lightColorScheme(
 private val DarkColorScheme = darkColorScheme()
 
 @Composable
-fun KiraAppTheme(
+fun NukeruAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,

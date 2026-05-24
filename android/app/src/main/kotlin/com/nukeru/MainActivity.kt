@@ -4,8 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.nukeru.ui.KiraApp
-import com.nukeru.ui.theme.KiraAppTheme
+import com.nukeru.ui.NukeruApp
+import com.nukeru.ui.theme.NukeruAppTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -20,11 +20,11 @@ class MainActivity : ComponentActivity() {
             var useDynamicColor by remember { mutableStateOf(true) }
             var selectedColorIndex by remember { mutableIntStateOf(0) }
             
-            KiraAppTheme(
+            NukeruAppTheme(
                 dynamicColor = useDynamicColor,
                 colorIndex = selectedColorIndex
             ) {
-                KiraApp(
+                NukeruApp(
                     isDynamicColor = useDynamicColor,
                     onDynamicColorChange = { useDynamicColor = it },
                     selectedColorIndex = selectedColorIndex,

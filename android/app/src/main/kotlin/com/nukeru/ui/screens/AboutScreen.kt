@@ -58,7 +58,7 @@ fun AboutScreen() {
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 Text(
-                    text = "If Kira saves your time when updating or flashing kernels, consider buying me a coffee to keep the development going.",
+                    text = "If Nukeru saves your time when updating or flashing kernels, consider buying me a coffee to keep the development going.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 20.sp,
@@ -227,7 +227,7 @@ fun AboutScreen() {
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Join the discussion about Kira.",
+                            text = "Join the discussion about Nukeru.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 16.sp
