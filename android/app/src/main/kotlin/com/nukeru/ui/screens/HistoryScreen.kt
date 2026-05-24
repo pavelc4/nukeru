@@ -55,7 +55,9 @@ fun HistoryScreen() {
             if (!nukeruDir.exists()) {
                 emptyList<HistoryItem>()
             } else {
-                val dirs = nukeruDir.listFiles { file -> file.isDirectory } ?: arrayOf()
+                val dirs = nukeruDir.listFiles { file -> 
+                    file.isDirectory && (file.listFiles { f -> f.isFile && f.name.endsWith(".img") }?.isNotEmpty() == true)
+                } ?: arrayOf()
                 dirs.map { dir ->
                     val files = dir.listFiles { f -> f.isFile && f.name.endsWith(".img") } ?: arrayOf()
                     var totalSize = 0L

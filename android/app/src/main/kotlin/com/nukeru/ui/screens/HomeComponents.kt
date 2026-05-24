@@ -258,6 +258,19 @@ fun ProgressState(
                 }
             }
 
+            if (state.isRunning) {
+                Button(
+                    onClick = {
+                        NukeruJni.cancelExtraction()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    Text("Cancel Extraction", fontWeight = FontWeight.Bold, color = Color.White)
+                }
+            }
+
             if (state.isDone) {
                 LaunchedEffect(state.savedDir) {
                     if (state.savedDir.isNotEmpty() && state.errorText == null) {

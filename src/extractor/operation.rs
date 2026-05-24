@@ -28,6 +28,9 @@ pub fn run(req: &ExtractRequest, manifest: &DeltaArchiveManifest, cb: Arc<dyn Pr
             selected.is_empty() || selected.contains(name)
         })
         .for_each(|partition| {
+            if crate::IS_CANCELLED.load(std::sync::atomic::Ordering::Relaxed) {
+                return;
+            }
             let name = partition.partition_name.as_deref().unwrap_or("");
             let out_path = Path::new(req.output_dir.as_str()).join(format!("{}.img", name));
 
@@ -59,6 +62,9 @@ fn extract_partition(
     let mut bytes_written: u64 = 0;
 
     for (i, op) in partition.operations.iter().enumerate() {
+        if crate::IS_CANCELLED.load(std::sync::atomic::Ordering::Relaxed) {
+            bail!("Extraction cancelled by user");
+        }
         apply_op(&mut src, req.data_offset, op, &mut writer)
             .with_context(|| format!("Op #{} on partition '{}'", i, name))?;
 

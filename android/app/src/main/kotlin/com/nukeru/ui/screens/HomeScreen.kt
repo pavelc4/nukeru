@@ -34,6 +34,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.nukeru.backend.NukeruJni
+import com.nukeru.backend.ExtractionService
 
 data class PartitionInfo(
     val name: String,
@@ -48,44 +49,44 @@ fun HomeScreen(
     onStateChange: (Int) -> Unit
 ) {
     val context = LocalContext.current
-    var zipName by remember { mutableStateOf("") }
-    var zipFdPath by remember { mutableStateOf("") }
-    var pfd by remember { mutableStateOf<ParcelFileDescriptor?>(null) }
-    var partitionsList = remember { mutableStateListOf<PartitionInfo>() }
+    val state = ExtractionService.ExtractionState
+
+    androidx.activity.compose.BackHandler(enabled = currentState == 2) {
+        state.clearSelection()
+        onStateChange(1)
+    }
 
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             try {
-                // Get file name
                 val cursor = context.contentResolver.query(uri, null, null, null, null)
-                zipName = cursor?.use {
+                state.zipName = cursor?.use {
                     if (it.moveToFirst()) {
                         it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
                     } else "payload.zip"
                 } ?: "payload.zip"
 
-                // Open FD
                 val newPfd = context.contentResolver.openFileDescriptor(uri, "r")
                 if (newPfd != null) {
-                    pfd?.close() // close previous if any
-                    pfd = newPfd
-                    zipFdPath = "FD:${newPfd.fd}"
+                    state.pfd?.close()
+                    state.pfd = newPfd
+                    state.zipFdPath = "FD:${newPfd.fd}"
 
-                    val res = NukeruJni.getPartitions(zipFdPath)
+                    val res = NukeruJni.getPartitions(state.zipFdPath)
                     if (res.startsWith("OK:")) {
-                        partitionsList.clear()
+                        state.partitionsList.clear()
                         val partsData = res.substring(3).split(";")
                         for (p in partsData) {
                             if (p.isNotBlank()) {
                                 val split = p.split("|")
                                 if (split.size == 3) {
-                                    partitionsList.add(
+                                    state.partitionsList.add(
                                         PartitionInfo(split[0], split[1].toLong(), split[2].toInt(), true)
                                     )
                                 }
                             }
                         }
-                        onStateChange(2) // Move to SelectionState
+                        onStateChange(2)
                     } else {
                         Toast.makeText(context, "Gagal membaca ZIP: $res", Toast.LENGTH_LONG).show()
                     }
@@ -102,27 +103,26 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp, vertical = 24.dp)
         ) {
-            Crossfade(targetState = currentState, label = "HomeStateCrossfade") { state ->
-                when (state) {
+            Crossfade(targetState = currentState, label = "HomeStateCrossfade") { s ->
+                when (s) {
                     1 -> EmptyState(
                         onSelectFile = { launcher.launch("*/*") }
                     )
                     2 -> SelectionState(
-                        zipName = zipName,
-                        partitions = partitionsList,
+                        zipName = state.zipName,
+                        partitions = state.partitionsList,
                         onPartitionToggle = { index ->
-                            val item = partitionsList[index]
-                            partitionsList[index] = item.copy(checked = !item.checked)
+                            val item = state.partitionsList[index]
+                            state.partitionsList[index] = item.copy(checked = !item.checked)
                         },
                         onStartExtract = { onStateChange(3) }
                     )
                     3 -> ProgressState(
-                        zipFdPath = zipFdPath,
-                        zipName = zipName,
-                        partitions = partitionsList.filter { it.checked },
+                        zipFdPath = state.zipFdPath,
+                        zipName = state.zipName,
+                        partitions = state.partitionsList.filter { it.checked },
                         onComplete = {
-                            pfd?.close()
-                            pfd = null
+                            state.clearSelection()
                             onStateChange(1)
                         }
                     )
@@ -130,12 +130,11 @@ fun HomeScreen(
             }
         }
 
-        // Floating Action Button
         if (currentState < 3) {
             ExtendedFloatingActionButton(
                 onClick = {
                     if (currentState == 1) launcher.launch("*/*")
-                    else if (currentState == 2 && partitionsList.any { it.checked }) onStateChange(3)
+                    else if (currentState == 2 && state.partitionsList.any { it.checked }) onStateChange(3)
                 },
                 containerColor = MaterialTheme.colorScheme.inversePrimary,
                 contentColor = MaterialTheme.colorScheme.onSurface,
@@ -146,7 +145,7 @@ fun HomeScreen(
             ) {
                 Icon(Icons.Outlined.CheckCircleOutline, "Select")
                 Spacer(Modifier.width(8.dp))
-                val fabText = if (currentState == 1) "Select .zip File" else "Extract ${partitionsList.count { it.checked }} Partitions"
+                val fabText = if (currentState == 1) "Select .zip File" else "Extract ${state.partitionsList.count { it.checked }} Partitions"
                 Text(text = fabText, fontWeight = FontWeight.Bold)
             }
         }

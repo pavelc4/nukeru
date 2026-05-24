@@ -41,4 +41,9 @@ object NukeruJni {
      * "FATAL|error_message" for fatal error
      */
     external fun pollProgress(): String
+
+    /**
+     * Cancels the ongoing extraction process.
+     */
+    external fun cancelExtraction()
 }

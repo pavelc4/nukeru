@@ -93,6 +93,8 @@ pub extern "system" fn Java_com_nukeru_backend_NukeruJni_startExtraction<'local>
             let output_dir_rust: String = env.get_string(&output_dir)?.into();
             let parts_raw: String = env.get_string(&partitions_str)?.into();
 
+            crate::IS_CANCELLED.store(false, std::sync::atomic::Ordering::Relaxed);
+
             let target_parts: Vec<String> = parts_raw.split(',').map(|s| s.to_string()).collect();
 
             let (tx, rx) = mpsc::channel();
@@ -154,4 +156,12 @@ pub extern "system" fn Java_com_nukeru_backend_NukeruJni_pollProgress<'local>(
             JString::from_str(env, &response)
         })
         .resolve::<jni::errors::ThrowRuntimeExAndDefault>()
+}
+
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_com_nukeru_backend_NukeruJni_cancelExtraction<'local>(
+    _unowned_env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+) {
+    crate::IS_CANCELLED.store(true, std::sync::atomic::Ordering::Relaxed);
 }

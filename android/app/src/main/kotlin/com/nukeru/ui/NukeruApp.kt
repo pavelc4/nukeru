@@ -41,6 +41,11 @@ fun NukeruApp(
         NavItem("About", Icons.Outlined.Info, 3)
     )
 
+    androidx.activity.compose.BackHandler(enabled = currentTab == 1 && homeState == 2) {
+        homeState = 1
+        com.nukeru.backend.ExtractionService.ExtractionState.clearSelection()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -59,6 +64,17 @@ fun NukeruApp(
                 navigationIcon = {
                     if (isSettingsOpen) {
                         IconButton(onClick = { isSettingsOpen = false }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    } else if (currentTab == 1 && homeState == 2) {
+                        IconButton(onClick = {
+                            homeState = 1
+                            com.nukeru.backend.ExtractionService.ExtractionState.clearSelection()
+                        }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back",

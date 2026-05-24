@@ -11,6 +11,10 @@ import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.*
 
+import android.os.ParcelFileDescriptor
+import androidx.compose.runtime.mutableStateListOf
+import com.nukeru.ui.screens.PartitionInfo
+
 class ExtractionService : Service() {
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -20,6 +24,9 @@ class ExtractionService : Service() {
         var isRunning by mutableStateOf(false)
         var statusText by mutableStateOf("Idle")
         var zipName by mutableStateOf("")
+        var zipFdPath by mutableStateOf("")
+        var pfd by mutableStateOf<ParcelFileDescriptor?>(null)
+        val partitionsList = mutableStateListOf<PartitionInfo>()
         val progressMap = mutableStateMapOf<String, Float>()
         var isDone by mutableStateOf(false)
         var savedDir by mutableStateOf("")
@@ -32,6 +39,17 @@ class ExtractionService : Service() {
             progressMap.clear()
             isDone = false
             savedDir = ""
+            errorText = null
+        }
+
+        fun clearSelection() {
+            zipName = ""
+            zipFdPath = ""
+            pfd?.close()
+            pfd = null
+            partitionsList.clear()
+            isDone = false
+            isRunning = false
             errorText = null
         }
     }
@@ -94,13 +112,26 @@ class ExtractionService : Service() {
                 }
                 if (msg.startsWith("FATAL|")) {
                     val err = msg.substring(6)
-                    withContext(Dispatchers.Main) {
-                        ExtractionState.statusText = "Error: $err"
-                        ExtractionState.errorText = err
-                        ExtractionState.isDone = true
-                        ExtractionState.isRunning = false
+                    if (err == "Extraction cancelled by user") {
+                        withContext(Dispatchers.Main) {
+                            ExtractionState.statusText = "Extraction Cancelled"
+                            ExtractionState.errorText = "Cancelled"
+                            ExtractionState.isDone = true
+                            ExtractionState.isRunning = false
+                        }
+                        try {
+                            java.io.File(outDir).deleteRecursively()
+                        } catch (e: Exception) {}
+                        updateNotification("Extraction cancelled", 0)
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            ExtractionState.statusText = "Error: $err"
+                            ExtractionState.errorText = err
+                            ExtractionState.isDone = true
+                            ExtractionState.isRunning = false
+                        }
+                        updateNotification("Extraction failed: $err", 0)
                     }
-                    updateNotification("Extraction failed: $err", 0)
                     break
                 }
                 if (msg.startsWith("P|")) {
